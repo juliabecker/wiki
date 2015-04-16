@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
+    <title>Choco Wiki | Add Article</title>
+</head>
+<body>
+    <h1><a href = "/">Choco Wiki</a></h1>
+    <h2>New Article</h2>
+    <form method = "POST" action = "/article/{{article_id}}">
+        <label>Title:</label>
+            <input type = "text" name = "title"></p>
+        <label>Content:</label>
+            <textarea rows = "3" cols = "30" name = "content"></textarea></p>
+        <p>Your information: </p>
+        <label>Name:</label>
+            <input type = "text" name = "name">
+        <label>Email:</label>
+            <input type = "text" name = "email">
+        <button>Submit Changes</button>
+    </form>
+</body>
+</html>

@@ -44,6 +44,7 @@ app.get('/category/:id', function(req, res) {
 app.get('/article/:id', function(req, res) {
     var template = fs.readFileSync('./views/article.html', 'utf8');
 
+    console.log(req.params);
     db.all("SELECT * FROM articles WHERE article_id = " + req.params.id + ";", function(err, article) {
         db.all("SELECT name FROM authors WHERE author_id = " + article[0].author_id + ";", function(err, author) {
             var artObj = {author: author[0].name, id: article[0].article_id, title: article[0].title, date_modified: article[0].date_modified, content: article[0].content};
@@ -63,13 +64,42 @@ app.get('/article/:id/edit', function(req, res) {
 
 })
 
+app.get('/new', function(req, res) {
+    var template = fs.readFileSync('./views/new.html', 'utf8');
+
+    res.send(template);
+});
+
 app.put('/article/:id', function(req, res) {
-    // get all new values - title and content
-    // get new date
-    // find article in db
-    // update article with new values
-    // email author
-    // redirect to ('/article')
+
+    // Updated article details
+    var newTitle = req.body.title;
+    var newContent = req.body.content;
+
+    // New author details
+    var authorName = req.body.name;
+    var authorEmail = req.body.email;
+
+    // Update article
+    db.run("UPDATE articles SET title = '" + newTitle + "', content = '" + newContent + "', date_modified = '" + new Date() + "' WHERE article_id = " + req.params.id + ";");
+
+    // Add author if new
+    db.all("SELECT * FROM authors WHERE email = '" + authorEmail + "';", function(err, data) {
+        console.log(data);
+        if (data.length === 0) { // Author does not exist - add as new
+            db.run("INSERT INTO authors (name, email) VALUES ('" + authorName + "', '" + authorEmail + "');");
+        } else {
+            // Author already exists - do nothing
+        }
+        res.redirect('/article/' + req.params.id);
+    });
+});
+
+app.delete('/article/:id', function(req, res) {
+    db.run("DELETE FROM articles WHERE article_id = " + req.params.id + ";");
+
+    res.redirect('/');
+
 });
 
 
