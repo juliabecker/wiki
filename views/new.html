@@ -11,17 +11,24 @@
 <body>
     <h1><a href = "/">Choco Wiki</a></h1>
     <h2>New Article</h2>
-    <form method = "POST" action = "/article/{{article_id}}">
+    <form method = "POST" action = "/article/">
         <label>Title:</label>
             <input type = "text" name = "title"></p>
         <label>Content:</label>
             <textarea rows = "3" cols = "30" name = "content"></textarea></p>
+        <label>Categories:</label>
+            <ul>
+            {{#allCategories}}
+                <li><input type = "checkbox" name = "{{name}}" value = "{{name}}" /> {{name}}</li>
+            {{/allCategories}}
+            <li><input type = "checkbox" name = "other" value = "{{name}}" /> New Category: </li><input type = "text" name = "newCat"/>
+            </ul>
         <p>Your information: </p>
         <label>Name:</label>
             <input type = "text" name = "name">
         <label>Email:</label>
             <input type = "text" name = "email">
-        <button>Submit Changes</button>
+        <button>Submit Article</button>
     </form>
 </body>
 </html>

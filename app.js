@@ -19,19 +19,20 @@ app.use(methodOverride('_method'));
 app.get('/', function(req, res) {
     var template = fs.readFileSync('./views/index.html', 'utf8');
 
-    db.all("SELECT * FROM categories;", function(err, data) {
+    db.all("SELECT * FROM categories;", {}, function(err, data) {
         var indexHtml = Mustache.render(template, {
             allCategories: data
         });
         res.send(indexHtml);
     });
 });
+
 //COME BACK TO THIS
 app.get('/category/:id', function(req, res) {
     var template = fs.readFileSync('./views/category.html', 'utf8');
     var articles = [];
 
-    db.all("SELECT * FROM articleCats WHERE cat_id = " + req.params.id + ";", function(err, data) {
+    db.all("SELECT * FROM articleCats WHERE cat_id = " + req.params.id + ";", {}, function(err, data) {
         data.forEach(function(e) {
             db.all("SELECT * FROM articles WHERE article_id = " + data[i].article_id + ";", function(err, articleData) {
                 articles.push(articleData[0]);
@@ -41,13 +42,21 @@ app.get('/category/:id', function(req, res) {
     });
 });
 
+//db.all("SELECT * FROM articles, articleCats WHERE articleCats.cat_id = " + req.params.id + " AND article_id = " + )
+
+// ADD CATEGORIES
 app.get('/article/:id', function(req, res) {
     var template = fs.readFileSync('./views/article.html', 'utf8');
 
-    console.log(req.params);
     db.all("SELECT * FROM articles WHERE article_id = " + req.params.id + ";", function(err, article) {
-        db.all("SELECT name FROM authors WHERE author_id = " + article[0].author_id + ";", function(err, author) {
-            var artObj = {author: author[0].name, id: article[0].article_id, title: article[0].title, date_modified: article[0].date_modified, content: article[0].content};
+        db.all("SELECT name FROM authors WHERE author_id = " + article[0].author_id + ";", {}, function(err, author) {
+            var artObj = {
+                author: author[0].name,
+                id: article[0].article_id,
+                title: article[0].title,
+                date_modified: article[0].date_modified,
+                content: article[0].content
+            };
             var html = Mustache.render(template, artObj);
             res.send(html);
         });
@@ -57,7 +66,7 @@ app.get('/article/:id', function(req, res) {
 app.get('/article/:id/edit', function(req, res) {
     var template = fs.readFileSync('./views/edit.html', 'utf8');
 
-    db.all("SELECT * FROM articles WHERE article_id = " + req.params.id + ";", function(err, article) {
+    db.all("SELECT * FROM articles WHERE article_id = " + req.params.id + ";", {}, function(err, article) {
         var html = Mustache.render(template, article[0]);
         res.send(html);
     });
@@ -67,7 +76,27 @@ app.get('/article/:id/edit', function(req, res) {
 app.get('/new', function(req, res) {
     var template = fs.readFileSync('./views/new.html', 'utf8');
 
-    res.send(template);
+    db.all("SELECT * FROM categories;", {}, function(err, data) {
+        res.send(Mustache.render(template, {allCategories: data}));
+    });
+});
+
+// NEED TO ADD CATEGORIES - Get category IDs from checked categories - insert into articleCats
+// If new category - insert into categories table and articleCats
+app.post('/article/', function(req, res) {
+
+    db.serialize(function() {
+        // Add author to DB if author doesn't exist
+        db.run("INSERT INTO authors (name, email) SELECT '" + req.body.name + "', '" + req.body.email + "' WHERE NOT EXISTS (SELECT 1 FROM authors WHERE email = '" + req.body.email + "');");
+
+        db.all("SELECT * FROM authors WHERE email = '" + req.body.email + "';", {}, function(err, data) {
+            db.run("INSERT INTO articles (title, content, date_modified, author_id) VALUES ('" + req.body.title + "', '" + req.body.content + "', '" + new Date() + "', " + data[0].author_id + ");");
+            db.all("SELECT * FROM articles WHERE title = '" + req.body.title + "';", {}, function(err, article) {
+                console.log(article);
+                res.redirect('/article/' + article[0].article_id);   
+            });
+        });
+    });
 });
 
 app.put('/article/:id', function(req, res) {
@@ -84,7 +113,7 @@ app.put('/article/:id', function(req, res) {
     db.run("UPDATE articles SET title = '" + newTitle + "', content = '" + newContent + "', date_modified = '" + new Date() + "' WHERE article_id = " + req.params.id + ";");
 
     // Add author if new
-    db.all("SELECT * FROM authors WHERE email = '" + authorEmail + "';", function(err, data) {
+    db.all("SELECT * FROM authors WHERE email = '" + authorEmail + "';", {}, function(err, data) {
         console.log(data);
         if (data.length === 0) { // Author does not exist - add as new
             db.run("INSERT INTO authors (name, email) VALUES ('" + authorName + "', '" + authorEmail + "');");
