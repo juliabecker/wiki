@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
+    <title>Choco Wiki | {{title}}</title>
+</head>
+<body>
+    <h1><a href="/">Choco Wiki</a></h1>
+    <h2>{{title}}</h2>
+    <p>Author: {{author}}</p>
+    <p>Date Modified: {{date_modified}}</p>
+    <p>{{content}}</p>
+    <form method = "GET" action = "/article/{{id}}/edit">
+        <button>Edit Article</button>
+    </form>
+    <form method = "POST" action = "/article/{{id}}?_method=DELETE">
+        <button>Delete</button>
+    </form>
+</body>
+</html>

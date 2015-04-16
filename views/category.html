@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <title>Choco Wiki | {{name}}</title>
+</head>
+<body>
+    <h1><a href = "/">Choco Wiki<a></h1>
+    <h2>Category: {{name}}</h2>
+    <ul>
+    {{#allArticles}}
+        <li><a href = "/article/{{articleId}}">{{title}}</a></li>
+    {{/allArticles}}
+    </ul>
+</body>
+</html>

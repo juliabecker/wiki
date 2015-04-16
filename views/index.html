@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <title>Choco Wiki | Home</title>
+</head>
+<body>
+    <h1><a href="./">Choco Wiki</a></h1>
+    <p>Search by keyword or select a category</p>
+    <form method = "GET" action = '/results'>
+        <input type = "text" name = "searchTerm" placeholder = "Search Term"/>
+        <button type = "submit">Search</button>
+    </form>
+    <ul>
+    {{#allCategories}}
+        <li><a href = "/category/{{cat_id}}">{{name}}</a></li>
+    {{/allCategories}}
+    </ul>
+</body>
+</html>
