@@ -32,17 +32,25 @@ app.get('/category/:id', function(req, res) {
     var template = fs.readFileSync('./views/category.html', 'utf8');
     var articles = [];
 
-    db.all("SELECT * FROM articleCats WHERE cat_id = " + req.params.id + ";", {}, function(err, data) {
-        data.forEach(function(e) {
-            db.all("SELECT * FROM articles WHERE article_id = " + data[i].article_id + ";", function(err, articleData) {
-                articles.push(articleData[0]);
+    db.all("SELECT * FROM categories WHERE cat_id = " + req.params.id + ";", {}, function(err, category) {
+
+        db.all("SELECT * FROM articleCats WHERE cat_id = " + req.params.id + ";", {}, function(err, article_ids) {
+            article_ids.forEach(function(e) {
+                
+                db.all("SELECT * FROM articles WHERE article_id = " + e.article_id + ";", {}, function(err, articleData) {
+                    articles.push(articleData[0]);
+                    if (articles.length === article_ids.length) {
+                        res.send(Mustache.render(template, {
+                            name: category[0].name,
+                            allArticles: articles,
+                        }));
+                    }
+                });
             });
         });
-        res.send(articles);
     });
 });
 
-//db.all("SELECT * FROM articles, articleCats WHERE articleCats.cat_id = " + req.params.id + " AND article_id = " + )
 
 // ADD CATEGORIES
 app.get('/article/:id', function(req, res) {
@@ -77,7 +85,9 @@ app.get('/new', function(req, res) {
     var template = fs.readFileSync('./views/new.html', 'utf8');
 
     db.all("SELECT * FROM categories;", {}, function(err, data) {
-        res.send(Mustache.render(template, {allCategories: data}));
+        res.send(Mustache.render(template, {
+            allCategories: data
+        }));
     });
 });
 
@@ -93,7 +103,7 @@ app.post('/article/', function(req, res) {
             db.run("INSERT INTO articles (title, content, date_modified, author_id) VALUES ('" + req.body.title + "', '" + req.body.content + "', '" + new Date() + "', " + data[0].author_id + ");");
             db.all("SELECT * FROM articles WHERE title = '" + req.body.title + "';", {}, function(err, article) {
                 console.log(article);
-                res.redirect('/article/' + article[0].article_id);   
+                res.redirect('/article/' + article[0].article_id);
             });
         });
     });
