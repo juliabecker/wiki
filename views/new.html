@@ -3,7 +3,7 @@
 <head>
 <!-- MAKE ALL FIELDS REQUIRED -->
 
-<!-- Bootstrap -->
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
 
@@ -12,7 +12,15 @@
 <body>
     <h1><a href = "/">Choco Wiki</a></h1>
     <h2>New Article</h2>
-    <form method = "POST" action = "/article/">
+    <form method = "POST" action = "/newauthor">
+     <p>New User? Enter your Name and Email here: 
+        <label>Name:</label>
+            <input type = "text" name = "newAuthorName">
+        <label>Email:</label>
+            <input type = "text" name = "newAuthorEmail">
+        <button>Log In</button></p>
+    </form>
+    <form method = "POST" action = "/article">
         <label>Title:</label>
             <input type = "text" name = "title"></p>
         <label>Content:</label>
@@ -20,15 +28,17 @@
         <label>Categories:</label>
             <ul>
             {{#allCategories}}
-                <li><input type = "checkbox" name = "{{cat_id}}" value = "{{name}}" /> {{name}}</li>
+                <li><input type = "checkbox" name = "categories" value = "{{cat_id}}" />{{name}}</li>
             {{/allCategories}}
-            <li><input type = "checkbox" name = "{{name}}" value = "{{name}}" /> New Category: </li><input type = "text" name = "newCat"/>
+            <li><input type = "checkbox"/> New Category: </li><input type = "text" name = "newCat"/>
             </ul>
-        <p>Your information: </p>
-        <label>Name:</label>
-            <input type = "text" name = "name">
-        <label>Email:</label>
-            <input type = "text" name = "email">
+        <p>Author: 
+        <select name = "author_id">
+            <option>SELECT AUTHOR</option>
+            {{#allAuthors}}
+                <option value = "{{author_id}}">{{name}}</option>
+            {{/allAuthors}}
+        <select></p>
         <button>Submit Article</button>
     </form>
 </body>

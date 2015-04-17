@@ -5,6 +5,7 @@ var Mustache = require('mustache');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
+var marked = require('marked');
 
 var app = express();
 var db = new sqlite3.Database('./db/wiki.db');
@@ -36,13 +37,12 @@ app.get('/category/:id', function(req, res) {
 
         db.all("SELECT * FROM articleCats WHERE cat_id = " + req.params.id + ";", {}, function(err, article_ids) {
             article_ids.forEach(function(e) {
-                
                 db.all("SELECT * FROM articles WHERE article_id = " + e.article_id + ";", {}, function(err, articleData) {
                     articles.push(articleData[0]);
                     if (articles.length === article_ids.length) {
                         res.send(Mustache.render(template, {
                             name: category[0].name,
-                            allArticles: articles,
+                            allArticles: articles
                         }));
                     }
                 });
@@ -58,14 +58,14 @@ app.get('/article/:id', function(req, res) {
 
     db.all("SELECT * FROM articles WHERE article_id = " + req.params.id + ";", function(err, article) {
         db.all("SELECT name FROM authors WHERE author_id = " + article[0].author_id + ";", {}, function(err, author) {
-            var artObj = {
+            var articleObj = {
                 author: author[0].name,
                 id: article[0].article_id,
                 title: article[0].title,
                 date_modified: article[0].date_modified,
-                content: article[0].content
+                content: marked(article[0].content)
             };
-            var html = Mustache.render(template, artObj);
+            var html = Mustache.render(template, articleObj);
             res.send(html);
         });
     });
@@ -74,68 +74,87 @@ app.get('/article/:id', function(req, res) {
 app.get('/article/:id/edit', function(req, res) {
     var template = fs.readFileSync('./views/edit.html', 'utf8');
 
-    db.all("SELECT * FROM articles WHERE article_id = " + req.params.id + ";", {}, function(err, article) {
-        var html = Mustache.render(template, article[0]);
-        res.send(html);
-    });
+    db.all("SELECT * FROM authors;", {}, function(err, authors) {
+        db.all("SELECT * FROM articles WHERE article_id = " + req.params.id + ";", {}, function(err, article) {
+            var html = Mustache.render(template, {
+                "article_id": req.params.id,
+                "title": article[0].title,
+                "content": article[0].content,
+                "allAuthors": authors
+            });
 
-})
+            res.send(html);
+        });
+    });
+});
 
 app.get('/new', function(req, res) {
     var template = fs.readFileSync('./views/new.html', 'utf8');
 
-    db.all("SELECT * FROM categories;", {}, function(err, data) {
-        res.send(Mustache.render(template, {
-            allCategories: data
-        }));
+    db.all("SELECT * FROM categories;", {}, function(err, categories) {
+        db.all("SELECT * FROM authors;", {}, function(err, authors) {
+            res.send(Mustache.render(template, {
+                allCategories: categories,
+                allAuthors: authors
+            }));
+        });
     });
 });
 
 // NEED TO ADD CATEGORIES - Get category IDs from checked categories - insert into articleCats
 // If new category - insert into categories table and articleCats
-app.post('/article/', function(req, res) {
+app.post('/article', function(req, res) {
 
     db.serialize(function() {
-        // Add author to DB if author doesn't exist
-        db.run("INSERT INTO authors (name, email) SELECT '" + req.body.name + "', '" + req.body.email + "' WHERE NOT EXISTS (SELECT 1 FROM authors WHERE email = '" + req.body.email + "');");
+        console.log(req.body);
 
-        db.all("SELECT * FROM authors WHERE email = '" + req.body.email + "';", {}, function(err, data) {
-            db.run("INSERT INTO articles (title, content, date_modified, author_id) VALUES ('" + req.body.title + "', '" + req.body.content + "', '" + new Date() + "', " + data[0].author_id + ");");
-            db.all("SELECT * FROM articles WHERE title = '" + req.body.title + "';", {}, function(err, article) {
-                console.log(article);
-                res.redirect('/article/' + article[0].article_id);
-            });
+        db.run("INSERT INTO articles (title, content, date_modified, author_id) VALUES ('" + req.body.title + "', '" + req.body.content + "', '" + new Date() + "', " + req.body.author_id + ");");
+        db.all("SELECT * FROM articles WHERE title = '" + req.body.title + "';", {}, function(err, article) {
+            // Add article-category relationships
+            if (Array.isArray(req.body.categories)) { // Multiple categories were checked
+                req.body.categories.forEach(function(e) {
+                    db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + e + ");");
+                });
+            } else { // Just one category was checked
+                db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + req.body.categories + ");");
+            } // NEED HELP WITH THIS
+            if (req.body.newCat != '') { // User entered new category value
+                db.serialize(function() {
+                    db.run("INSERT INTO categories (name) VALUES ('" + req.body.newCat + "');");
+                    db.all("SELECT * FROM categories WHERE name = '" + req.body.newCat + "');", {}, function(err, category) {
+                        console.log(category);
+                        db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + category[0].cat_id + ");");
+
+                    });
+                });
+            }
+            res.redirect('/article/' + article[0].article_id);
         });
     });
 });
 
+app.post('/newauthor', function(req, res) {
+
+    db.run("INSERT INTO authors (name, email) SELECT '" + req.body.newAuthorName + "', '" + req.body.newAuthorEmail + "' WHERE NOT EXISTS (SELECT 1 FROM authors WHERE email = '" + req.body.newAuthorEmail + "');");
+
+    if (req.body.article_id != undefined) {
+        res.redirect('article/' + req.body.article_id + '/edit'); // Redirect to edited article
+    } else {
+        res.redirect('new'); // Redirect to new article
+    }
+});
+
+// Update with categories
 app.put('/article/:id', function(req, res) {
 
-    // Updated article details
-    var newTitle = req.body.title;
-    var newContent = req.body.content;
 
-    // New author details
-    var authorName = req.body.name;
-    var authorEmail = req.body.email;
-
-    // Update article
-    db.run("UPDATE articles SET title = '" + newTitle + "', content = '" + newContent + "', date_modified = '" + new Date() + "' WHERE article_id = " + req.params.id + ";");
-
-    // Add author if new
-    db.all("SELECT * FROM authors WHERE email = '" + authorEmail + "';", {}, function(err, data) {
-        console.log(data);
-        if (data.length === 0) { // Author does not exist - add as new
-            db.run("INSERT INTO authors (name, email) VALUES ('" + authorName + "', '" + authorEmail + "');");
-        } else {
-            // Author already exists - do nothing
-        }
-        res.redirect('/article/' + req.params.id);
-    });
+    db.run("UPDATE articles SET content = '" + req.body.content + "', date_modified = '" + new Date() + "' WHERE article_id = " + req.params.id + ";");
+    res.redirect('/article/' + req.params.id);
 });
 
 app.delete('/article/:id', function(req, res) {
     db.run("DELETE FROM articles WHERE article_id = " + req.params.id + ";");
+    db.run("DELETE FROM articleCats WHERE article_id = " + req.params.id + ";");
 
     res.redirect('/');
 

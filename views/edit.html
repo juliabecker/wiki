@@ -9,21 +9,29 @@
 </head>
 <body>
     <h1><a href = "/">Choco Wiki</a></h1>
-    <form method = "POST" action = "/article/{{article_id}}?_method=PUT">
-        <h1><input type = "text" name = "title" value = "{{title}}" placeholder = "{{title}}"></h1>
-        <!--Include??-->
-            <p>Author: {{author}}</p>
-        <p>Date Modified: {{date_modified}}</p>
-        <p><textarea rows = "3" cols = "30" name = "content" value = "{{content}}" placeholder = "{{content}}"></textarea></p>
-        <p>Your information: </p>
+    <form method = "POST" action = "/newauthor">
+     <p>New User? Enter your Name and Email here: 
         <label>Name:</label>
-            <input type = "text" name = "name">
+            <input type = "text" name = "newAuthorName">
         <label>Email:</label>
-            <input type = "text" name = "email">
+            <input type = "text" name = "newAuthorEmail">
+        <input type = "hidden" name = "article_id" value = "{{article_id}}">
+        <button>Log In</button></p>
+    </form>
+    <h1>{{title}}</h1>
+    <form method = "POST" action = "/article/{{article_id}}?_method=PUT">
+        <p><textarea rows = "3" cols = "30" name = "content" value = "{{content}}" placeholder = "{{content}}"></textarea></p>
+        <p>User: 
+        <select>
+            <option>SELECT YOUR NAME</option>
+            {{#allAuthors}}
+                <option value = "{{author_id}}">{{name}}</option>
+            {{/allAuthors}}
+        <select></p>
         <button>Submit Changes</button>
     </form>
     <form method = "POST" action = "/article/{{article_id}}?_method=DELETE">
-        <button onclick="return confirm('Are you sure you want to delete this article?')">Delete Article</button>
+        <button onclick = "return confirm('Are you sure you want to delete this article?')">Delete Article</button>
     </form>
 </body>
 </html>
