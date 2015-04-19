@@ -55,18 +55,29 @@ app.get('/category/:id', function(req, res) {
 // ADD CATEGORIES
 app.get('/article/:id', function(req, res) {
     var template = fs.readFileSync('./views/article.html', 'utf8');
+    var allCategories = [];
 
     db.all("SELECT * FROM articles WHERE article_id = " + req.params.id + ";", function(err, article) {
         db.all("SELECT name FROM authors WHERE author_id = " + article[0].author_id + ";", {}, function(err, author) {
-            var articleObj = {
-                author: author[0].name,
-                id: article[0].article_id,
-                title: article[0].title,
-                date_modified: article[0].date_modified,
-                content: marked(article[0].content)
-            };
-            var html = Mustache.render(template, articleObj);
-            res.send(html);
+            db.all("SELECT * FROM articleCats WHERE article_id = " + req.params.id + ";", function(err, catIds) {
+                catIds.forEach(function(e) {
+                    db.all("SELECT * FROM categories WHERE cat_id = " + e.cat_id + ";", {}, function(err, categories) {
+                        allCategories.push(categories[0]);
+                        if (allCategories.length === categories.length) {
+                            var articleObj = {
+                                allCategories: allCategories,
+                                author: author[0].name,
+                                id: article[0].article_id,
+                                title: article[0].title,
+                                date_modified: article[0].date_modified,
+                                content: marked(article[0].content)
+                            };
+                            var html = Mustache.render(template, articleObj);
+                            res.send(html);
+                        }
+                    })
+                });
+            });
         });
     });
 });
@@ -101,15 +112,27 @@ app.get('/new', function(req, res) {
     });
 });
 
+// Search Results
+app.get('/results', function(req, res) {
+    //var template = fs.readFileSync('./views/category.html', 'utf8');
+
+    db.all("SELECT * FROM articles WHERE content LIKE '%" + req.query.searchTerm + "%' OR title LIKE '%" + req.query.searchTerm + "%';", {}, function(err, searchResults) {
+        //var html = Mustache.render(template, {allArticles: searchResults});
+        //res.send(html);
+        res.redirect('/')
+    })
+});
+
 // NEED TO ADD CATEGORIES - Get category IDs from checked categories - insert into articleCats
 // If new category - insert into categories table and articleCats
 app.post('/article', function(req, res) {
 
     db.serialize(function() {
-        console.log(req.body);
 
         db.run("INSERT INTO articles (title, content, date_modified, author_id) VALUES ('" + req.body.title + "', '" + req.body.content + "', '" + new Date() + "', " + req.body.author_id + ");");
+
         db.all("SELECT * FROM articles WHERE title = '" + req.body.title + "';", {}, function(err, article) {
+
             // Add article-category relationships
             if (Array.isArray(req.body.categories)) { // Multiple categories were checked
                 req.body.categories.forEach(function(e) {
@@ -117,7 +140,7 @@ app.post('/article', function(req, res) {
                 });
             } else { // Just one category was checked
                 db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + req.body.categories + ");");
-            } // NEED HELP WITH THIS
+            } // NEED HELP WITH THIS!!!
             if (req.body.newCat != '') { // User entered new category value
                 db.serialize(function() {
                     db.run("INSERT INTO categories (name) VALUES ('" + req.body.newCat + "');");
@@ -128,6 +151,7 @@ app.post('/article', function(req, res) {
                     });
                 });
             }
+
             res.redirect('/article/' + article[0].article_id);
         });
     });
@@ -147,8 +171,7 @@ app.post('/newauthor', function(req, res) {
 // Update with categories
 app.put('/article/:id', function(req, res) {
 
-
-    db.run("UPDATE articles SET content = '" + req.body.content + "', date_modified = '" + new Date() + "' WHERE article_id = " + req.params.id + ";");
+    db.run("UPDATE articles SET content = '" + req.body.content.replace(/'/g, "''") + "', date_modified = '" + new Date() + "' WHERE article_id = " + req.params.id + ";");
     res.redirect('/article/' + req.params.id);
 });
 

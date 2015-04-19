@@ -13,7 +13,7 @@
     <h1><a href = "/">Choco Wiki</a></h1>
     <h2>New Article</h2>
     <form method = "POST" action = "/newauthor">
-     <p>New User? Enter your Name and Email here: 
+     <p>New User? Enter your Name and Email here:
         <label>Name:</label>
             <input type = "text" name = "newAuthorName">
         <label>Email:</label>
@@ -28,7 +28,7 @@
         <label>Categories:</label>
             <ul>
             {{#allCategories}}
-                <li><input type = "checkbox" name = "categories" value = "{{cat_id}}" />{{name}}</li>
+                <li><input type = "checkbox" name = "categories" value = "{{cat_id}}" /> {{name}}</li>
             {{/allCategories}}
             <li><input type = "checkbox"/> New Category: </li><input type = "text" name = "newCat"/>
             </ul>
