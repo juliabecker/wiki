@@ -28,6 +28,7 @@
                 <option value = "{{author_id}}">{{name}}</option>
             {{/allAuthors}}
         <select></p>
+        <input type = "hidden" name = "author" value = "{{email}}">
         <button>Submit Changes</button>
     </form>
     <form method = "POST" action = "/article/{{article_id}}?_method=DELETE">

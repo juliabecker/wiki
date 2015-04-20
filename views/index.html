@@ -13,11 +13,22 @@
         <input type = "text" name = "searchTerm" placeholder = "Search Term"/>
         <button type = "submit">Search</button>
     </form>
-    <ul>
+
+    <form method = "GET" action = "/category">
+    <select name = "category">
+        <option>SELECT CATEGORY</option>
+        {{#allCategories}}
+            <option value = "{{cat_id}}">{{name}}</option>
+        {{/allCategories}}
+    </select>
+    <button type = "submit">Submit</button>
+    </form>
+
+    <!-- <ul>
     {{#allCategories}}
         <li><a href = "/category/{{cat_id}}">{{name}}</a></li>
     {{/allCategories}}
-    </ul>
+    </ul> -->
     <p>Or add a new article</p>
     <form method = "GET" action = "/new">
         <button type = "submit">Add New Article</button>

@@ -6,9 +6,14 @@ var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var marked = require('marked');
+var config = require('./config.js');
+
+//var sendgrid = require('sendgrid')(config.sendgrid_api_user, config.sendgrid_api_key));
+var sendgrid = require('sendgrid')(config.sendgrid_api_user, config.sendgrid_api_key);
 
 var app = express();
 var db = new sqlite3.Database('./db/wiki.db');
+var email = new sendgrid.Email();
 
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({
@@ -18,6 +23,7 @@ app.use(methodOverride('_method'));
 
 
 app.get('/', function(req, res) {
+
     var template = fs.readFileSync('./views/index.html', 'utf8');
 
     db.all("SELECT * FROM categories;", {}, function(err, data) {
@@ -28,30 +34,16 @@ app.get('/', function(req, res) {
     });
 });
 
-//COME BACK TO THIS
+app.get('/category', function(req, res) {
+    if (req.query.category) {
+        res.redirect('/category/' + req.query.category);
+    }
+});
+
+
 app.get('/category/:id', function(req, res) {
     var template = fs.readFileSync('./views/category.html', 'utf8');
 
-    // OLD CODE
-    //var articles = [];
-
-    // db.all("SELECT * FROM categories WHERE cat_id = " + req.params.id + ";", {}, function(err, category) {
-
-    //     db.all("SELECT * FROM articleCats WHERE cat_id = " + req.params.id + ";", {}, function(err, article_ids) {
-    //         article_ids.forEach(function(e) {
-    //             db.all("SELECT * FROM articles WHERE article_id = " + e.article_id + ";", {}, function(err, articleData) {
-    //                 articles.push(articleData[0]);
-    //                 if (articles.length === article_ids.length) {
-    //                     res.send(Mustache.render(template, {
-    //                         name: category[0].name,
-    //                         allArticles: articles
-    //                     }));
-    //                 }
-    //             });
-    //         });
-    //     });
-    // });
-    // OLD CODE ENDS
     db.all("SELECT * FROM categories WHERE cat_id = " + req.params.id + ";", {}, function(err, category) {
 
         db.all("SELECT * FROM articles INNER JOIN articleCats ON articles.article_id = articleCats.article_id WHERE articleCats.cat_id = " + req.params.id + ";", {}, function(err, articles) {
@@ -64,7 +56,6 @@ app.get('/category/:id', function(req, res) {
 });
 
 
-// ADD CATEGORIES
 app.get('/article/:id', function(req, res) {
     var template = fs.readFileSync('./views/article.html', 'utf8');
     var allCategories = [];
@@ -107,7 +98,7 @@ app.get('/article/:id/edit', function(req, res) {
             });
 
             res.send(html);
-        });
+        })
     });
 });
 
@@ -126,12 +117,14 @@ app.get('/new', function(req, res) {
 
 // Search Results
 app.get('/results', function(req, res) {
-    //var template = fs.readFileSync('./views/category.html', 'utf8');
+    var template = fs.readFileSync('./views/results.html', 'utf8');
 
     db.all("SELECT * FROM articles WHERE content LIKE '%" + req.query.searchTerm + "%' OR title LIKE '%" + req.query.searchTerm + "%';", {}, function(err, searchResults) {
-        //var html = Mustache.render(template, {allArticles: searchResults});
-        //res.send(html);
-        res.redirect('/')
+        var html = Mustache.render(template, {
+            name: req.query.searchTerm,
+            allArticles: searchResults
+        });
+        res.send(html);
     })
 });
 
@@ -160,7 +153,6 @@ app.post('/article', function(req, res) {
 
             if (req.body.newCat != '') { // User entered new category value
                 db.run("INSERT INTO categories (name) VALUES ('" + req.body.newCat + "');");
-
 
                 db.all("SELECT * FROM categories WHERE name = '" + req.body.newCat + "');", {}, function(err, category) {
                     //console.log(category);
@@ -193,8 +185,18 @@ app.post('/newauthor', function(req, res) {
     }
 });
 
-// Update with categories
 app.put('/article/:id', function(req, res) {
+
+    db.all("SELECT name, email FROM authors INNER JOIN articles ON articles.author_id = authors.author_id WHERE articles.article_id = " + req.params.id + ";", {}, function(err, author) {
+
+        email.addTo(author[0].email);
+        email.setFrom("jcbecker26@gmail.com");
+        email.setSubject("Choco Wiki Article Modified");
+        email.setHtml("Hi " + author[0].name + ", Your article on Choco Wiki has been modified. To view the changes, visit the article <a href = \"localhost:3000/article/" + req.params.id + ">here</a>");
+
+        sendgrid.send(email);
+    })
+
 
     db.run("UPDATE articles SET content = '" + req.body.content.replace(/'/g, "''") + "', date_modified = '" + new Date() + "' WHERE article_id = " + req.params.id + ";");
     res.redirect('/article/' + req.params.id);
@@ -202,7 +204,6 @@ app.put('/article/:id', function(req, res) {
 
 app.delete('/article/:id', function(req, res) {
     db.run("DELETE FROM articles, articleCats WHERE article_id = " + req.params.id + ";");
-    // db.run("DELETE FROM articleCats WHERE article_id = " + req.params.id + ";");
 
     res.redirect('/');
 
