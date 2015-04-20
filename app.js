@@ -31,22 +31,34 @@ app.get('/', function(req, res) {
 //COME BACK TO THIS
 app.get('/category/:id', function(req, res) {
     var template = fs.readFileSync('./views/category.html', 'utf8');
-    var articles = [];
 
+    // OLD CODE
+    //var articles = [];
+
+    // db.all("SELECT * FROM categories WHERE cat_id = " + req.params.id + ";", {}, function(err, category) {
+
+    //     db.all("SELECT * FROM articleCats WHERE cat_id = " + req.params.id + ";", {}, function(err, article_ids) {
+    //         article_ids.forEach(function(e) {
+    //             db.all("SELECT * FROM articles WHERE article_id = " + e.article_id + ";", {}, function(err, articleData) {
+    //                 articles.push(articleData[0]);
+    //                 if (articles.length === article_ids.length) {
+    //                     res.send(Mustache.render(template, {
+    //                         name: category[0].name,
+    //                         allArticles: articles
+    //                     }));
+    //                 }
+    //             });
+    //         });
+    //     });
+    // });
+    // OLD CODE ENDS
     db.all("SELECT * FROM categories WHERE cat_id = " + req.params.id + ";", {}, function(err, category) {
 
-        db.all("SELECT * FROM articleCats WHERE cat_id = " + req.params.id + ";", {}, function(err, article_ids) {
-            article_ids.forEach(function(e) {
-                db.all("SELECT * FROM articles WHERE article_id = " + e.article_id + ";", {}, function(err, articleData) {
-                    articles.push(articleData[0]);
-                    if (articles.length === article_ids.length) {
-                        res.send(Mustache.render(template, {
-                            name: category[0].name,
-                            allArticles: articles
-                        }));
-                    }
-                });
-            });
+        db.all("SELECT * FROM articles INNER JOIN articleCats ON articles.article_id = articleCats.article_id WHERE articleCats.cat_id = " + req.params.id + ";", {}, function(err, articles) {
+            res.send(Mustache.render(template, {
+                name: category[0].name,
+                allArticles: articles
+            }));
         });
     });
 });
@@ -127,33 +139,46 @@ app.get('/results', function(req, res) {
 // If new category - insert into categories table and articleCats
 app.post('/article', function(req, res) {
 
+    var articleId;
+
     db.serialize(function() {
 
         db.run("INSERT INTO articles (title, content, date_modified, author_id) VALUES ('" + req.body.title + "', '" + req.body.content + "', '" + new Date() + "', " + req.body.author_id + ");");
 
         db.all("SELECT * FROM articles WHERE title = '" + req.body.title + "';", {}, function(err, article) {
-
+            articleId = article[0].article_id;
             // Add article-category relationships
-            if (Array.isArray(req.body.categories)) { // Multiple categories were checked
-                req.body.categories.forEach(function(e) {
-                    db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + e + ");");
-                });
-            } else { // Just one category was checked
-                db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + req.body.categories + ");");
-            } // NEED HELP WITH THIS!!!
+            if (req.body.categories != undefined) {
+                if (Array.isArray(req.body.categories)) { // Multiple categories were checked
+                    req.body.categories.forEach(function(e) {
+                        db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + e + ");");
+                    });
+                } else { // Just one category was checked
+                    db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + req.body.categories + ");");
+                }
+            }
+
             if (req.body.newCat != '') { // User entered new category value
-                db.serialize(function() {
-                    db.run("INSERT INTO categories (name) VALUES ('" + req.body.newCat + "');");
-                    db.all("SELECT * FROM categories WHERE name = '" + req.body.newCat + "');", {}, function(err, category) {
-                        console.log(category);
+                db.run("INSERT INTO categories (name) VALUES ('" + req.body.newCat + "');");
+
+
+                db.all("SELECT * FROM categories WHERE name = '" + req.body.newCat + "');", {}, function(err, category) {
+                    //console.log(category);
+                    setTimeout(function() {
                         db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + category[0].cat_id + ");");
 
                     });
-                });
+                }, 5000);
+
+
+
             }
+
+
 
             res.redirect('/article/' + article[0].article_id);
         });
+
     });
 });
 
@@ -176,8 +201,8 @@ app.put('/article/:id', function(req, res) {
 });
 
 app.delete('/article/:id', function(req, res) {
-    db.run("DELETE FROM articles WHERE article_id = " + req.params.id + ";");
-    db.run("DELETE FROM articleCats WHERE article_id = " + req.params.id + ";");
+    db.run("DELETE FROM articles, articleCats WHERE article_id = " + req.params.id + ";");
+    // db.run("DELETE FROM articleCats WHERE article_id = " + req.params.id + ";");
 
     res.redirect('/');
 
