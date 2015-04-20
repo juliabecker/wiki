@@ -1,37 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
     <title>Choco Wiki | Home</title>
+
+    <style>
+        .wrapper {
+            padding: 20px;
+            margin: 20px;
+        }
+        body {
+            line-height: 30px;
+            color: #888;
+        }
+        .btn {
+/*            margin-top: 10px;
+*/        }
+        h1 {
+            color: ;
+        }
+
+    </style>
+
 </head>
+
 <body>
-    <h1><a href="./">Choco Wiki</a></h1>
-    <p>Search by keyword or select a category</p>
-    <form method = "GET" action = "/results">
-        <input type = "text" name = "searchTerm" placeholder = "Search Term"/>
-        <button type = "submit">Search</button>
-    </form>
-
-    <form method = "GET" action = "/category">
-    <select name = "category">
-        <option>SELECT CATEGORY</option>
-        {{#allCategories}}
-            <option value = "{{cat_id}}">{{name}}</option>
-        {{/allCategories}}
-    </select>
-    <button type = "submit">Submit</button>
-    </form>
-
-    <!-- <ul>
-    {{#allCategories}}
-        <li><a href = "/category/{{cat_id}}">{{name}}</a></li>
-    {{/allCategories}}
-    </ul> -->
-    <p>Or add a new article</p>
-    <form method = "GET" action = "/new">
-        <button type = "submit">Add New Article</button>
-    </form>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <h1><a href="./">Choco Wiki</a></h1>
+            </div>
+        </div>
+    </nav>
+        <div class = "wrapper">
+            <p>Welcome to the Choco Wiki! Your source for everything chocolate. Search by keyword, select a category, or add a new article to get started.</p><br>
+            <form class = "form-inline" method = "GET" action = "/results">
+                <label>Search by keyword:  </label>
+                <input class = "form-control" type = "text" name = "searchTerm" placeholder = "Search Term"/>
+                <button class= "btn btn-default" type = "submit">Search</button>
+            </form>
+            <br>
+            <form class = "form-inline" method = "GET" action = "/category">
+                <label>Select a category:  </label>
+                <select name = "category" class="form-control">
+                    {{#allCategories}}
+                        <option value = "{{cat_id}}">{{name}}</option>
+                    {{/allCategories}}
+                </select>
+                <button class= "btn btn-default" type = "submit">Submit</button>
+            </form>
+            <br>
+            <form class = "form-inline" method = "GET" action = "/new">
+                <label>Add a new article:  </label>
+                <button class= "btn btn-default" type = "submit">Add New Article</button>
+            </form>
+    </div>
 </body>
 </html>
+
+

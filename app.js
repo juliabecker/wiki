@@ -8,7 +8,6 @@ var methodOverride = require('method-override');
 var marked = require('marked');
 var config = require('./config.js');
 
-//var sendgrid = require('sendgrid')(config.sendgrid_api_user, config.sendgrid_api_key));
 var sendgrid = require('sendgrid')(config.sendgrid_api_user, config.sendgrid_api_key);
 
 var app = express();
@@ -20,8 +19,9 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(methodOverride('_method'));
+//app.use(express.static('views'));
 
-
+// Index page
 app.get('/', function(req, res) {
 
     var template = fs.readFileSync('./views/index.html', 'utf8');
@@ -34,13 +34,14 @@ app.get('/', function(req, res) {
     });
 });
 
+// Category results from dropdown
 app.get('/category', function(req, res) {
     if (req.query.category) {
         res.redirect('/category/' + req.query.category);
     }
 });
 
-
+// Category results
 app.get('/category/:id', function(req, res) {
     var template = fs.readFileSync('./views/category.html', 'utf8');
 
@@ -55,7 +56,7 @@ app.get('/category/:id', function(req, res) {
     });
 });
 
-
+// Get article detail
 app.get('/article/:id', function(req, res) {
     var template = fs.readFileSync('./views/article.html', 'utf8');
     var allCategories = [];
@@ -85,6 +86,7 @@ app.get('/article/:id', function(req, res) {
     });
 });
 
+// Edit article detail
 app.get('/article/:id/edit', function(req, res) {
     var template = fs.readFileSync('./views/edit.html', 'utf8');
 
@@ -102,6 +104,7 @@ app.get('/article/:id/edit', function(req, res) {
     });
 });
 
+// Write new article
 app.get('/new', function(req, res) {
     var template = fs.readFileSync('./views/new.html', 'utf8');
 
@@ -128,20 +131,16 @@ app.get('/results', function(req, res) {
     })
 });
 
-// NEED TO ADD CATEGORIES - Get category IDs from checked categories - insert into articleCats
-// If new category - insert into categories table and articleCats
+// Post new article
 app.post('/article', function(req, res) {
-
-    var articleId;
 
     db.serialize(function() {
 
         db.run("INSERT INTO articles (title, content, date_modified, author_id) VALUES ('" + req.body.title + "', '" + req.body.content + "', '" + new Date() + "', " + req.body.author_id + ");");
 
         db.all("SELECT * FROM articles WHERE title = '" + req.body.title + "';", {}, function(err, article) {
-            articleId = article[0].article_id;
             // Add article-category relationships
-            if (req.body.categories != undefined) {
+            if (req.body.categories) {
                 if (Array.isArray(req.body.categories)) { // Multiple categories were checked
                     req.body.categories.forEach(function(e) {
                         db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + e + ");");
@@ -151,29 +150,29 @@ app.post('/article', function(req, res) {
                 }
             }
 
-            if (req.body.newCat != '') { // User entered new category value
-                db.run("INSERT INTO categories (name) VALUES ('" + req.body.newCat + "');");
-
-                db.all("SELECT * FROM categories WHERE name = '" + req.body.newCat + "');", {}, function(err, category) {
-                    //console.log(category);
-                    setTimeout(function() {
-                        db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + category[0].cat_id + ");");
-
-                    });
-                }, 5000);
-
-
-
-            }
-
-
-
             res.redirect('/article/' + article[0].article_id);
-        });
 
+            // Adding new categories not working - commented out temporarily
+
+            // if (req.body.newCat != '') { // User entered new category value
+            //     db.run("INSERT INTO categories (name) VALUES ('" + req.body.newCat + "');");
+
+            //     db.all("SELECT * FROM categories WHERE name = '" + req.body.newCat + "');", {}, function(err, category) {
+            //             //console.log(category);
+            //             setTimeout(function() {
+            //                 db.run("INSERT INTO articleCats (article_id, cat_id) VALUES (" + article[0].article_id + ", " + category[0].cat_id + ");");
+
+            //                 //});
+            //             }, 5000);
+
+            //         }
+            //     });
+
+        });
     });
 });
 
+// Add new author
 app.post('/newauthor', function(req, res) {
 
     db.run("INSERT INTO authors (name, email) SELECT '" + req.body.newAuthorName + "', '" + req.body.newAuthorEmail + "' WHERE NOT EXISTS (SELECT 1 FROM authors WHERE email = '" + req.body.newAuthorEmail + "');");
@@ -185,6 +184,7 @@ app.post('/newauthor', function(req, res) {
     }
 });
 
+// Update article
 app.put('/article/:id', function(req, res) {
 
     db.all("SELECT name, email FROM authors INNER JOIN articles ON articles.author_id = authors.author_id WHERE articles.article_id = " + req.params.id + ";", {}, function(err, author) {
@@ -192,7 +192,7 @@ app.put('/article/:id', function(req, res) {
         email.addTo(author[0].email);
         email.setFrom("jcbecker26@gmail.com");
         email.setSubject("Choco Wiki Article Modified");
-        email.setHtml("Hi " + author[0].name + ", Your article on Choco Wiki has been modified. To view the changes, visit the article <a href = \"localhost:3000/article/" + req.params.id + ">here</a>");
+        email.setHtml("Hi " + author[0].name + ", Your article on Choco Wiki has been modified.");
 
         sendgrid.send(email);
     })
@@ -202,6 +202,7 @@ app.put('/article/:id', function(req, res) {
     res.redirect('/article/' + req.params.id);
 });
 
+// Delete article
 app.delete('/article/:id', function(req, res) {
     db.run("DELETE FROM articles, articleCats WHERE article_id = " + req.params.id + ";");
 

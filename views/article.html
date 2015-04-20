@@ -6,16 +6,40 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
 
     <title>Choco Wiki | {{title}}</title>
+
+    <style>
+        .wrapper {
+            padding: 20px;
+            margin: 20px;
+        }
+        body {
+            line-height: 30px;
+            color: #888;
+        }
+        .btn {
+            margin-top: 10px;
+        }
+
+    </style>
+
 </head>
 <body>
+    <nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
     <h1><a href="/">Choco Wiki</a></h1>
-    <h2>{{title}}</h2>
-    <p>Author: {{author}}</p>
-    <p>Date Modified: {{date_modified}}</p>
-    <p>Categories: {{#allCategories}}<a href = "/category/{{cat_id}}">{{name}} </a>{{/allCategories}}</p>
-    {{{content}}}
-    <form method = "GET" action = "/article/{{id}}/edit">
-        <button>Edit Article</button>
-    </form>
+    </div>
+    </div>
+    </nav>
+    <div class = "wrapper">
+        <h2>{{title}}</h2>
+        <p>Author: {{author}}</p>
+        <p>Date Modified: {{date_modified}}</p>
+        <p>Categories: {{#allCategories}}<a href = "/category/{{cat_id}}">{{name}} </a>{{/allCategories}}</p>
+        {{{content}}}
+        <form method = "GET" action = "/article/{{id}}/edit">
+            <button class= "btn btn-default btn-sm">Edit Article</button>
+        </form>
+    </div>
 </body>
 </html>

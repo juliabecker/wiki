@@ -8,9 +8,31 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
 
     <title>Choco Wiki | Add Article</title>
+
+    <style>
+        .wrapper {
+            padding: 20px;
+            margin: 20px;
+        }
+        body {
+            line-height: 30px;
+            color: #888;
+        }
+        .btn {
+            margin-top: 10px;
+        }
+
+    </style>
+
 </head>
 <body>
+    <nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
     <h1><a href = "/">Choco Wiki</a></h1>
+    </div>
+    </div>
+    </nav>
     <h2>New Article</h2>
     <form method = "POST" action = "/newauthor">
      <p>New User? Enter your Name and Email here:
@@ -18,20 +40,20 @@
             <input type = "text" name = "newAuthorName">
         <label>Email:</label>
             <input type = "text" name = "newAuthorEmail">
-        <button>Log In</button></p>
+        <button class= "btn btn-default btn-sm">Log In</button></p>
     </form>
     <form method = "POST" action = "/article">
         <label>Title:</label>
             <input type = "text" name = "title"></p>
         <label>Content:</label>
-            <textarea rows = "3" cols = "30" name = "content"></textarea></p>
+            <textarea class = "form-control" rows = "10" name = "content"></textarea></p>
         <label>Categories:</label>
             <ul>
             {{#allCategories}}
                 <li><input type = "checkbox" name = "categories" value = "{{cat_id}}" /> {{name}}</li>
             {{/allCategories}}
-            <li><input type = "checkbox"/> New Category: </li><input type = "text" name = "newCat"/>
-            </ul>
+<!--             <li><input type = "checkbox"/> New Category: </li><input type = "text" name = "newCat"/>
+-->            </ul>
         <p>Author: 
         <select name = "author_id">
             <option>SELECT AUTHOR</option>
@@ -39,7 +61,7 @@
                 <option value = "{{author_id}}">{{name}}</option>
             {{/allAuthors}}
         <select></p>
-        <button>Submit Article</button>
+        <button class= "btn btn-default btn-sm">Submit Article</button>
     </form>
 </body>
 </html>

@@ -4,15 +4,44 @@
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
     <title>Choco Wiki | Search Results</title>
+
+    <style>
+        .wrapper {
+            padding: 20px;
+            margin: 20px;
+        }
+        body {
+            line-height: 30px;
+            color: #888;
+        }
+        .btn {
+            margin-top: 10px;
+        }
+
+        ul {
+            list-style-type: none;
+        }
+
+    </style>
+
 </head>
 <body>
+    <nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
     <h1><a href = "/">Choco Wiki</a></h1>
+    </div>
+    </div>
+    </nav>
+    <div class = "wrapper">
     <h2>Search Results For: "{{name}}"</h2>
     <ul>
     {{#allArticles}}
         <li><a href = "/article/{{article_id}}">{{title}}</a></li>
     {{/allArticles}}
     </ul>
+    </div>
 </body>
 </html>
