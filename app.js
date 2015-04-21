@@ -203,7 +203,9 @@ app.put('/article/:id', function(req, res) {
 
 // Delete article
 app.delete('/article/:id', function(req, res) {
-    db.run("DELETE FROM articles, articleCats WHERE article_id = " + req.params.id + ";");
+    db.run("DELETE FROM articles WHERE article_id = " + req.params.id + ";");
+    db.run("DELETE FROM articleCats WHERE article_id = " + req.params.id + ";");
+
 
     res.redirect('/');
 
