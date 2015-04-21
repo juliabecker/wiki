@@ -135,7 +135,7 @@ app.post('/article', function(req, res) {
 
     db.serialize(function() {
 
-        db.run("INSERT INTO articles (title, content, date_modified, author_id) VALUES ('" + req.body.title + "', '" + req.body.content + "', '" + new Date() + "', " + req.body.author_id + ");");
+        db.run("INSERT INTO articles (title, content, date_modified, author_id) VALUES ('" + req.body.title + "', '" + req.body.content.replace(/'/g, "''") + "', '" + new Date() + "', " + req.body.author_id + ");");
 
         db.all("SELECT * FROM articles WHERE title = '" + req.body.title + "';", {}, function(err, article) {
             // Add article-category relationships
@@ -186,7 +186,7 @@ app.post('/newauthor', function(req, res) {
 // Update article
 app.put('/article/:id', function(req, res) {
 
-    db.all("SELECT name, email FROM authors INNER JOIN articles ON articles.author_id = authors.author_id WHERE articles.article_id = " +req.params.id + ";", {}, function(err, author) {
+    db.all("SELECT name, email FROM authors INNER JOIN articles ON articles.author_id = authors.author_id WHERE articles.article_id = " + req.params.id + ";", {}, function(err, author) {
 
         email.addTo(author[0].email);
         email.setFrom("jcbecker26@gmail.com");

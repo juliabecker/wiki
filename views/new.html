@@ -35,38 +35,37 @@
     </div>
     </div>
     </nav>
-    <div class = "wrapper">
-    
-    <form class = "form-inline" method = "POST" action = "/newauthor">
-     <p>New User? Enter your Name and Email:
-        <label>Name:</label>
-            <input class = "form-control" type = "text" name = "newAuthorName">
-        <label>Email:</label>
-            <input class = "form-control" type = "text" name = "newAuthorEmail">
-        <button class= "btn btn-default btn-sm">Log In</button></p>
-    </form>
-    <h2>New Article</h2>
-    <form method = "POST" action = "/article">
-        <label>Title:</label>
-            <input class = "form-control" type = "text" name = "title"></p>
-        <label>Content:</label>
-            <textarea class = "form-control" rows = "15" name = "content"></textarea></p>
-        <label>Categories:</label>
-            <ul>
-            {{#allCategories}}
-                <li><input type = "checkbox" name = "categories" value = "{{cat_id}}" /> {{name}}</li>
-            {{/allCategories}}
-<!--             <li><input type = "checkbox"/> New Category: </li><input type = "text" name = "newCat"/>
--->            </ul>
-        <p>Author: 
-        <select class="form-control" name = "author_id">
-            <option>SELECT AUTHOR</option>
-            {{#allAuthors}}
-                <option value = "{{author_id}}">{{name}}</option>
-            {{/allAuthors}}
-        </select></p>
-        <button class= "btn btn-default btn-sm">Submit Article</button>
-    </form>
+    <div class = "wrapper"> 
+        <form class = "form-inline" method = "POST" action = "/newauthor">
+            <p>New User? Enter your Name and Email:
+                <label>Name:</label>
+                    <input class = "form-control" type = "text" name = "newAuthorName">
+                <label>Email:</label>
+                    <input class = "form-control" type = "text" name = "newAuthorEmail">
+            <button class= "btn btn-default btn-sm">Log In</button></p>
+        </form>
+        <h2>New Article</h2>
+        <form method = "POST" action = "/article">
+            <label>Title:</label>
+                <input class = "form-control" type = "text" name = "title"></p>
+            <label>Content:</label>
+                <textarea class = "form-control" rows = "15" name = "content"></textarea></p>
+            <label>Categories:</label>
+                <ul>
+                {{#allCategories}}
+                    <li><input type = "checkbox" name = "categories" value = "{{cat_id}}" /> {{name}}</li>
+                {{/allCategories}}
+                <!-- <li><input type = "checkbox"/> New Category: </li><input type = "text" name = "newCat"/>-->
+                </ul>
+            <p>Author: 
+                <select class="form-control" name = "author_id">
+                    <option>SELECT AUTHOR</option>
+                    {{#allAuthors}}
+                        <option value = "{{author_id}}">{{name}}</option>
+                    {{/allAuthors}}
+                </select></p>
+                <button class= "btn btn-default btn-sm">Submit Article</button>
+        </form>
     </div>
 </body>
 </html>
