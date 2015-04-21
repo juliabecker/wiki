@@ -20,6 +20,10 @@
             margin-top: 10px;
         }
 
+        ul {
+            list-style-type: none;
+        }
+
     </style>
 
 </head>
@@ -33,9 +37,8 @@
     </nav>
     <div class = "wrapper">
         <h2>{{title}}</h2>
-        <p>Author: {{author}}</p>
-        <p>Date Modified: {{date_modified}}</p>
-        <p>Categories: {{#allCategories}}<a href = "/category/{{cat_id}}">{{name}} </a>{{/allCategories}}</p>
+        <p>Author: {{author}} | Last Modified: {{date_modified}} | Categories: {{#allCategories}}<a href = "/category/{{cat_id}}">{{name}} </a>{{/allCategories}}</p>
+        <br>
         {{{content}}}
         <form method = "GET" action = "/article/{{id}}/edit">
             <button class= "btn btn-default btn-sm">Edit Article</button>

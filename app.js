@@ -7,7 +7,6 @@ var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 var marked = require('marked');
 var config = require('./config.js');
-
 var sendgrid = require('sendgrid')(config.sendgrid_api_user, config.sendgrid_api_key);
 
 var app = express();
@@ -187,7 +186,7 @@ app.post('/newauthor', function(req, res) {
 // Update article
 app.put('/article/:id', function(req, res) {
 
-    db.all("SELECT name, email FROM authors INNER JOIN articles ON articles.author_id = authors.author_id WHERE articles.article_id = " + req.params.id + ";", {}, function(err, author) {
+    db.all("SELECT name, email FROM authors INNER JOIN articles ON articles.author_id = authors.author_id WHERE articles.article_id = " +req.params.id + ";", {}, function(err, author) {
 
         email.addTo(author[0].email);
         email.setFrom("jcbecker26@gmail.com");

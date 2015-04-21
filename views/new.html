@@ -18,9 +18,11 @@
             line-height: 30px;
             color: #888;
         }
-        .btn {
-            margin-top: 10px;
+
+        ul {
+            list-style-type: none;
         }
+    
 
     </style>
 
@@ -33,20 +35,22 @@
     </div>
     </div>
     </nav>
-    <h2>New Article</h2>
-    <form method = "POST" action = "/newauthor">
-     <p>New User? Enter your Name and Email here:
+    <div class = "wrapper">
+    
+    <form class = "form-inline" method = "POST" action = "/newauthor">
+     <p>New User? Enter your Name and Email:
         <label>Name:</label>
-            <input type = "text" name = "newAuthorName">
+            <input class = "form-control" type = "text" name = "newAuthorName">
         <label>Email:</label>
-            <input type = "text" name = "newAuthorEmail">
+            <input class = "form-control" type = "text" name = "newAuthorEmail">
         <button class= "btn btn-default btn-sm">Log In</button></p>
     </form>
+    <h2>New Article</h2>
     <form method = "POST" action = "/article">
         <label>Title:</label>
-            <input type = "text" name = "title"></p>
+            <input class = "form-control" type = "text" name = "title"></p>
         <label>Content:</label>
-            <textarea class = "form-control" rows = "10" name = "content"></textarea></p>
+            <textarea class = "form-control" rows = "15" name = "content"></textarea></p>
         <label>Categories:</label>
             <ul>
             {{#allCategories}}
@@ -55,13 +59,14 @@
 <!--             <li><input type = "checkbox"/> New Category: </li><input type = "text" name = "newCat"/>
 -->            </ul>
         <p>Author: 
-        <select name = "author_id">
+        <select class="form-control" name = "author_id">
             <option>SELECT AUTHOR</option>
             {{#allAuthors}}
                 <option value = "{{author_id}}">{{name}}</option>
             {{/allAuthors}}
-        <select></p>
+        </select></p>
         <button class= "btn btn-default btn-sm">Submit Article</button>
     </form>
+    </div>
 </body>
 </html>

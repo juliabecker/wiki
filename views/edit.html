@@ -43,9 +43,9 @@
     </form>
     <h1>{{title}}</h1>
     <form method = "POST" action = "/article/{{article_id}}?_method=PUT">
-        <p><textarea class = "form-control" rows = "10" name = "content" placeholder = "{{content}}">{{content}}</textarea></p>
+        <p><textarea class = "form-control" rows = "20" name = "content" placeholder = "{{content}}">{{content}}</textarea></p>
         <p>User: 
-        <select>
+        <select class="form-control">
             <option>SELECT YOUR NAME</option>
             {{#allAuthors}}
                 <option value = "{{author_id}}">{{name}}</option>
